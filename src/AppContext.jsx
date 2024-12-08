@@ -1,8 +1,9 @@
-import { createContext, useContext } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
 import PropTypes from 'prop-types';
 import { apis } from './utils/apis';
 import { processRequests } from './utils/processRequests';
 import { message, notification } from "antd"
+import { useNavigate } from 'react-router-dom';
 const AppContext = createContext()
 
 export const useAppContext = () => {
@@ -14,7 +15,7 @@ export const useAppContext = () => {
 }
 
 export const AppProvider = ({ children }) => {
-
+    const navigate = useNavigate()
     const registerUser = async (userData) => {
         try {
             const response = await fetch(`${apis.backend}/api/users/register-user`, {
@@ -46,18 +47,24 @@ export const AppProvider = ({ children }) => {
         }
     }
 
+    const [loginData, setLoginData] = useState({})
+    const [isAdmin, setIsAdmin] = useState(false)
     const loginUser = async (userData) => {
         try {
             const response = await fetch(`${apis.backend}/api/users/login-user`, {
                 body: userData,
-                method: "GET"
+                method: "POST"
             })
 
             const responseData = await processRequests(response)
+
             if (!response.ok) throw new Error(responseData.msg)
             notification.success({
                 message: responseData.msg,
-            })
+            });
+            setLoginData(responseData.user)
+            if(responseData.user.admin) setIsAdmin(true)
+            localStorage.setItem("user", JSON.stringify(responseData.user))
             return true
         } catch (error) {
             console.log(error)
@@ -71,10 +78,36 @@ export const AppProvider = ({ children }) => {
             return false
         }
     }
+    
+    const retrieveUserData = () =>{
+        try {
+            const user = JSON.parse(localStorage.getItem("user"))
+            console.log(user)
+            if(user) setLoginData(user)
+            else navigate("/")
+        } catch (error) {
+            console.log(error)
+            notification.error({
+                message: "Error al verificar su sesión",
+                duration: 3,
+                pauseOnHover: false,
+                showProgress: true
+            })
+            localStorage.removeItem("user")
+            return navigate("/")
+        }
+    }
+
+    useEffect(()=>{
+        retrieveUserData()
+    },[])
+    useEffect(()=>{
+        if(isAdmin) navigate("/dashboard")
+    },[isAdmin])
     return (
         <AppContext.Provider
             value={{
-                registerUser, loginUser
+                registerUser, loginUser, loginData, isAdmin
             }}
         >
             {children}
