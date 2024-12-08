@@ -8,8 +8,15 @@ function Login() {
     const [isLoading, setIsLoading] = useState(false)
     const [switchInput, setSwitchInput] = useState(true)
     const { loginUser } = useAppContext()
-    const onFinish = (values) => {
+    const onFinish = async(values) => {
+        setIsLoading(true)
         const formData = new FormData()
+        for (const key in values) {
+            formData.append(key, values[key] || "")
+        }
+        const result = await loginUser(formData)
+        setIsLoading(false)
+        if(result) navigate("/")
     }
 
     return (
@@ -56,7 +63,7 @@ function Login() {
                                 <Input placeholder="Introduce tu email" />
                             </Form.Item>
                         }
-                        <Button onClick={() => setSwitchInput(!switchInput)}>Quiero usar mi {!switchInput ? "email" : "usuario"}</Button>
+                        <Button onClick={() => setSwitchInput(!switchInput)}>Quiero usar mi {switchInput ? "email" : "usuario"}</Button>
                         <Form.Item
                             label="Contraseña"
 
@@ -73,7 +80,7 @@ function Login() {
 
                         <Form.Item>
                             <Flex wrap justify="space-between" gap={10}>
-                                <Button type="primary" htmlType="submit">Iniciar sesión</Button>
+                                <Button type="primary" htmlType="submit" loading={isLoading}>Iniciar sesión</Button>
                                 <Button onClick={() => navigate("/register")}>No tengo cuenta</Button>
                             </Flex>
                         </Form.Item>
