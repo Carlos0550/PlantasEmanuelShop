@@ -5,3 +5,7 @@
   box-sizing: border-box;
   font-family: 'Poppins', Courier, monospace;
 }
+
+h1,h2,h3{
+  color: black;
+}
