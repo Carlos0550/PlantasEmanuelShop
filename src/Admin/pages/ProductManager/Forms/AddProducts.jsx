@@ -2,13 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { Form, Input, Select, Upload, message, Button } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
 import { useAppContext } from '../../../../AppContext';
-const { Dragger } = Upload;
 import { v4 as uuidv4 } from 'uuid';
 import { resizeAndConvertImages } from '../../../../utils/ResizeImages';
 
+const { Dragger } = Upload;
+
 function AddProducts() {
     const [form] = Form.useForm();
-    const { categories } = useAppContext();
+    const { categories, saveProduct, getProducts } = useAppContext();
     const [fileList, setFileList] = useState([]);
 
     const uploadProps = {
@@ -16,16 +17,15 @@ function AddProducts() {
         multiple: true,
         beforeUpload: async (file) => {
             try {
-                const compressedFiles = await resizeAndConvertImages(file);
-                console.log(compressedFiles)
-                const newFileList = compressedFiles.map((file) => ({
+                const [compressedFile] = await resizeAndConvertImages([file]);
+                const newFileList = {
                     uid: uuidv4(),
-                    name: file.name,
+                    name: compressedFile.name,
                     status: 'done',
-                    originFileObj: file,
-                }));
+                    originFileObj: compressedFile, 
+                };
 
-                setFileList((prevList) => [...prevList, ...newFileList]);
+                setFileList((prevList) => [...prevList, newFileList]);
             } catch (error) {
                 message.error('Error al redimensionar la imagen');
                 console.error('Error al redimensionar la imagen:', error);
@@ -35,19 +35,28 @@ function AddProducts() {
         },
         fileList,
         onRemove: (file) => {
-            console.log(file)
-            setFileList((prevList) => prevList.filter((item) => item.name.split(".")[0] !== file.name.split(".")[0]));
+            setFileList((prevList) => prevList.filter((item) => item.uid !== file.uid));
         },
-        
     };
 
     const onFinish = async (values) => {
-        console.log('Valores recibidos del formulario:', { ...values, product_images: fileList });
+        const formData = new FormData();
+        for (const key in values) {
+            if(key !== "product_images"){
+                formData.append(key, values[key] || "");
+            }
+        }
 
-        for (const file of fileList) {
-            const formData = new FormData();
-            formData.append('file', file.originFileObj);
+        fileList.forEach((file) => {
+            formData.append('images', file.originFileObj);
+        });
 
+        const result = await saveProduct(formData)
+        if(result){
+            message.success('Producto registrado con exito')
+            form.resetFields()
+            setFileList([])
+            getProducts()
         }
     };
 
