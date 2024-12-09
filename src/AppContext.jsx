@@ -147,6 +147,53 @@ export const AppProvider = ({ children }) => {
         }
     }
 
+    const saveProduct = async(productData) => {
+        try {
+            const response = await fetch(`${apis.backend}/api/products/save-product`, {
+                method: "POST",
+                
+                body: productData
+            });
+
+            const responseData = await processRequests(response)
+            if(!response.ok) throw new Error(responseData.msg)
+            message.success(`${responseData.msg}`)
+            return true
+        } catch (error) {
+            console.log(error)
+            notification.error({
+                message: "No fue posible registrar el producto",
+                description: error.message,
+                duration: 5,
+                pauseOnHover: false,
+                showProgress: true
+            })
+            return false
+        }
+    }
+
+    const [productsList, setProductsList] = useState([])
+
+    const getProducts = async() => {
+        try {
+            const response = await fetch(`${apis.backend}/api/products/get-products`)
+
+            const responseData = await processRequests(response)
+            if(response.status === 404) return;
+            if(!response.ok) throw new Error(responseData.msg)
+            setProductsList(responseData.products)
+        } catch (error) {
+            console.log(error)
+            notification.error({
+                message: "No fue posible encontrar los productos",
+                description: error.message,
+                duration: 5,
+                pauseOnHover: false,
+                showProgress: true
+            })
+        }
+    }
+
     useEffect(()=>{
         retrieveUserData()
     },[])
@@ -157,7 +204,8 @@ export const AppProvider = ({ children }) => {
         <AppContext.Provider
             value={{
                 registerUser, loginUser, loginData, isAdmin,
-                saveCategory, getCategories, categories
+                saveCategory, getCategories, categories, saveProduct,
+                productsList, getProducts
             }}
         >
             {children}
