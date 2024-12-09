@@ -3,6 +3,7 @@ import { Row, Col, Card } from 'antd'
 import AddCategories from './Forms/AddCategories'
 import AddProducts from './Forms/AddProducts'
 import CategoriesTable from './Tables/CategoriesTable'
+import ProductsTable from './Tables/ProductsTable'
 function ProductsManager() {
   return (
     <React.Fragment>
@@ -14,7 +15,7 @@ function ProductsManager() {
               <AddProducts/>
           </Card>
           <Card title="Listado de productos">
-
+              <ProductsTable/>
           </Card>
         </Col>
         <Col lg={24} xl={12}>
