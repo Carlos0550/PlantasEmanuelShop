@@ -83,7 +83,7 @@
     right: -20px;
     top: 20px; 
     cursor: pointer;
-    transition: all 100ms ease-in-out;
+    transition: all 500ms ease-in-out;
 }
 
 .sider.active .menu-icon {
@@ -92,7 +92,7 @@
 
 .menu-icon.active {
     background-color: #0f3f00;
-    transform: rotate(180deg); /* Gira la flecha si está activa */
+    transform: rotate(180deg);
 }
 
 .content {
@@ -101,6 +101,7 @@
     color: #fff;
     background-color: #f4f9e6;
     min-height: 100%;
+    overflow-y: auto;
 }
 
 .logo-container{
