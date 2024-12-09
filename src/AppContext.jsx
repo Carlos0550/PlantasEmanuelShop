@@ -96,6 +96,55 @@ export const AppProvider = ({ children }) => {
             localStorage.removeItem("user")
             return navigate("/")
         }
+    } 
+
+    const saveCategory = async(categoryName) => {
+        try {
+            const response = await fetch(`${apis.backend}/api/categories/save-category`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({category_name: categoryName})
+            })
+
+            const responseData = await processRequests(response)
+            if(!response.ok) throw new Error(responseData.msg)
+            message.success(`${responseData.msg}`)
+            return true
+        } catch (error) {
+            console.log(error)
+            notification.error({
+                message: "No fue posible registrar la categoría",
+                description: error.message,
+                duration: 5,
+                pauseOnHover: false,
+                showProgress: true
+            })
+            return false
+        }
+    }
+    const [categories, setCategories] = useState([])
+    const getCategories = async() => {
+        try {
+            const response = await fetch(`${apis.backend}/api/categories/get-categories`)
+
+            const responseData = await processRequests(response)
+            if(response.status === 404) return;
+            if(!response.ok) throw new Error(responseData.msg)
+            setCategories(responseData.categories)
+            return true
+        } catch (error) {
+            console.log(error)
+            notification.error({
+                message: "No fue posible encontrar las categorías",
+                description: error.message,
+                duration: 5,
+                pauseOnHover: false,
+                showProgress: true
+            })
+            return false
+        }
     }
 
     useEffect(()=>{
@@ -107,7 +156,8 @@ export const AppProvider = ({ children }) => {
     return (
         <AppContext.Provider
             value={{
-                registerUser, loginUser, loginData, isAdmin
+                registerUser, loginUser, loginData, isAdmin,
+                saveCategory, getCategories, categories
             }}
         >
             {children}
