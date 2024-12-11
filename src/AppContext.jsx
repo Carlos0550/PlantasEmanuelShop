@@ -130,7 +130,9 @@ export const AppProvider = ({ children }) => {
             const response = await fetch(`${apis.backend}/api/categories/get-categories`)
 
             const responseData = await processRequests(response)
-            if(response.status === 404) return;
+            if(response.status === 404){
+                return setCategories([])
+            };
             if(!response.ok) throw new Error(responseData.msg)
             setCategories(responseData.categories)
             return true
@@ -194,6 +196,41 @@ export const AppProvider = ({ children }) => {
         }
     }
 
+    const [editingProduct, setEditingProduct] = useState(false)
+    const [showProductForm, setShowProductForm] = useState(false)
+    const [showAlertProductForm, setShowAlertProductForm] = useState(false)
+    const [productId, setProductId] = useState(null)
+    const handleProducts = (editing = false, productId = null, showProductForm = false, showAlertProuctsForm = false) => {
+        setEditingProduct(editing)
+        setProductId(productId)
+        setShowProductForm(showProductForm)
+        setShowAlertProductForm(showAlertProuctsForm)
+    }
+
+    const editProducts = async(productValues, productId) => {
+        try {
+            const response = await fetch(`${apis.backend}/api/products/edit-product/${productId}`, {
+                method: "PUT",
+                body: productValues
+            });
+
+            const responseData = await processRequests(response)
+            if(!response.ok) throw new Error(responseData.msg)
+           
+            return true
+        } catch (error) {
+            console.log(error)
+            notification.error({
+                message: "No fue posible actualizar el producto",
+                description: error.message,
+                duration: 5,
+                pauseOnHover: false,
+                showProgress: true
+            })
+            return false
+        }
+    }
+
     useEffect(()=>{
         retrieveUserData()
     },[])
@@ -205,7 +242,8 @@ export const AppProvider = ({ children }) => {
             value={{
                 registerUser, loginUser, loginData, isAdmin,
                 saveCategory, getCategories, categories, saveProduct,
-                productsList, getProducts
+                productsList, getProducts, handleProducts, editingProduct, productId, showProductForm, showAlertProductForm,
+                editProducts
             }}
         >
             {children}
