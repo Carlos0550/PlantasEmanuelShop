@@ -1,10 +1,11 @@
 import { Button, Space, Table } from "antd"
 import { useAppContext } from "../../../../AppContext"
-import { useEffect } from "react"
+import React, { useEffect } from "react"
 import "./ProductsTable.css"
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons"
+import EditProductModal from "../../../../Components/Modales/EditProductModal"
 function ProductsTable() {
-    const { getProducts, productsList } = useAppContext()
+    const { getProducts, productsList, handleProducts,showProductForm } = useAppContext()
 
     const tableColumns = [
         {
@@ -41,7 +42,9 @@ function ProductsTable() {
         {
             render:(_,record) => (
                 <Space>
-                    <Button type='primary' icon={<EditOutlined/>}></Button>
+                    <Button type='primary' icon={<EditOutlined/>} onClick={()=>{
+                        handleProducts(true, record.id, true)
+                    }}></Button>
                     <Button type='primary' danger icon={<DeleteOutlined />}></Button>
                 </Space>
             )
@@ -52,14 +55,15 @@ function ProductsTable() {
         getProducts()
     },[])
 
-    useEffect(()=>{
-        console.log(productsList)
-    },[productsList])
   return (
-    <Table
+   <React.Fragment>
+     <Table
         columns={tableColumns}
         dataSource={productsList}
     />
+
+    {showProductForm && (<EditProductModal/>) }
+   </React.Fragment>
   )
 }
 
