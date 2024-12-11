@@ -20,9 +20,9 @@ function AddCategories() {
         <Form
             form={form}
             onFinish={onFinish}
-            // layout='vertical'
+            layout='vertical'
             autoComplete="off"
-            style={{ width: "100%" }}
+            style={{ minWidth: "100%" }}
         >
             <Form.Item
                 label="Categoría"
