@@ -10,23 +10,30 @@ function ProductsManager() {
       <h2>Sección de productos</h2>
       <h3>Administra aqui tu lista de stock</h3>
       <Row gutter={[16, 16]}>
-        <Col lg={24} xl={12}>
-          <Card title="Agregar nuevo producto">
-              <AddProducts/>
-          </Card>
-          <Card title="Listado de productos">
-              <ProductsTable/>
-          </Card>
-        </Col>
-        <Col lg={24} xl={12}>
-          <Card title="Agregar nueva categoria">
-              <AddCategories/>
-          </Card>
-          <Card title="Listado de categorias" style={{padding: "0px"}}>
-              <CategoriesTable/>
-          </Card>
-        </Col>
-      </Row>
+            <Col xl={12} lg={24}>
+                <Card title="Agregar nuevo producto">
+                    <AddProducts/>
+                </Card>
+            </Col>
+
+            <Col xl={12} lg={24}>
+                <Card title="Agregar nueva categoría">
+                    <AddCategories />
+                </Card>
+            </Col>
+
+            <Col xs={24}>
+                <Card title="Listado de productos">
+                    <ProductsTable/>
+                </Card>
+            </Col>
+
+            <Col xs={24}>
+                <Card title="Listado de categorías">
+                    <CategoriesTable/>
+                </Card>
+            </Col>
+        </Row>
     </React.Fragment>
   )
 }
