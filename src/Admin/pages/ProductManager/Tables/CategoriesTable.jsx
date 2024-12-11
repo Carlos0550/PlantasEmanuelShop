@@ -1,4 +1,4 @@
-import { Button, Table } from "antd"
+import { Button, message, notification, Table } from "antd"
 import { useAppContext } from "../../../../AppContext"
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons"
 import React, { useEffect } from "react"
@@ -28,7 +28,15 @@ function CategoriesTable() {
     ]
   return (
     <React.Fragment>
-        <Button onClick={()=>getCategories()}>Refrescar</Button>
+        <Button onClick={async()=>{
+            const hiddenMessage = message.loading("Cargando categorías...")
+            await getCategories()
+            hiddenMessage()
+            notification.info({
+                message: "Lista de categorias actualizada.",
+                description: `Se encontraron ${categories.length} categorías`,
+            })
+        }} style={{marginBottom: "10px"}}>Refrescar</Button>
         <Table
         columns={columns}
         dataSource={categories}
