@@ -194,6 +194,7 @@ useEffect(()=>{
             <Form.Item
                 name="product_description"
                 label="Descripción"
+                
                 rules={[{ required: true, message: 'Por favor ingrese la descripción' }]}
             >
                 <Editor
