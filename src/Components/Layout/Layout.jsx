@@ -1,11 +1,19 @@
 import './LayoutComponent.css';
 import logoImg from "../../public/assets/logo.png"
 import { HomeOutlined, MenuOutlined, OrderedListOutlined, ProductOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
-import { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAppContext } from '../../AppContext';
+
 function LayoutComponent({ component }) {
     const navigate = useNavigate()
     const [resizeSideBar, setResizeSideBar] = useState(false)
+    const { width } = useAppContext()
+
+    useEffect(() => {
+        if (width > 868) setResizeSideBar(false)
+        else setResizeSideBar(true)
+    }, [width])
     return (
         <div className="layout">
             <header className="header">
@@ -17,15 +25,43 @@ function LayoutComponent({ component }) {
 
             <div className="main-layout">
                 <aside className={resizeSideBar ? "sider active" : "sider"}>
-                    {!resizeSideBar ? <p>Plantas Emanuel</p> : <p style={{marginBottom: "18px"}}></p>}
-                    <span onClick={() => setResizeSideBar(!resizeSideBar)} className={resizeSideBar ? "menu-icon active" : "menu-icon"}><MenuOutlined style={{fontSize: "24px"}}/></span>
+                    {!resizeSideBar ? <p>Plantas Emanuel</p> : <p style={{ marginBottom: "18px" }}></p>}
+                    {width < 868 && <span onClick={() => setResizeSideBar(!resizeSideBar)} className={resizeSideBar ? "menu-icon active" : "menu-icon"}>
+                        <MenuOutlined style={{ fontSize: "24px" }} />
+                    </span>}
+
                     <ul>
-                        <li onClick={()=> navigate("/dashboard")}><HomeOutlined style={{fontSize: "22px"}}/> {!resizeSideBar ? "Dashboard" : null}</li>
-                        <li onClick={()=> navigate("/manage-products")}><ProductOutlined style={{fontSize: "22px"}}/> {!resizeSideBar ? "Productos" : null}</li>
-                        <li><UserOutlined style={{fontSize: "22px"}}/> {!resizeSideBar ? "Usuarios" : null}</li>
-                        <li><OrderedListOutlined style={{fontSize: "22px"}}/> {!resizeSideBar ? "Pedidos" : null}</li>
-                        <li><SettingOutlined style={{fontSize: "22px"}}/> {!resizeSideBar ? "Ajustes" : null}</li>
+                        {
+                            (width >= 868 || (resizeSideBar === false && width < 868))
+                                ? (
+                                    <React.Fragment>
+                                        <li onClick={() => {
+                                            navigate("/dashboard")
+                                            if (width < 868) setResizeSideBar(true)
+                                        }}>
+                                            <HomeOutlined style={{ fontSize: "22px" }} /> Dashboard
+                                        </li>
+                                        <li onClick={() => {
+                                            if (width < 868) setResizeSideBar(true)
+                                            navigate("/manage-products")
+                                        }}>
+                                            <ProductOutlined style={{ fontSize: "22px" }} /> Productos
+                                        </li>
+                                        <li>
+                                            <UserOutlined style={{ fontSize: "22px" }} /> Usuarios
+                                        </li>
+                                        <li>
+                                            <OrderedListOutlined style={{ fontSize: "22px" }} /> Pedidos
+                                        </li>
+                                        <li>
+                                            <SettingOutlined style={{ fontSize: "22px" }} /> Ajustes
+                                        </li>
+                                    </React.Fragment>
+                                )
+                                : null
+                        }
                     </ul>
+
                 </aside>
 
                 <main className="content">
