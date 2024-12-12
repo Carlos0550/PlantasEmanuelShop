@@ -40,6 +40,7 @@ function AddProducts() {
                     name: compressedFile.name,
                     status: 'done',
                     originFileObj: compressedFile,
+                    editing: false,
                     thumbUrl: URL.createObjectURL(compressedFile) 
                 };
 
@@ -64,9 +65,7 @@ function AddProducts() {
         },[fileList])
         
     const onFinish = async (values) => {
-        console.log(values)
         const htmlDescription = stateToHTML(editorState.getCurrentContent());
-
         const formData = new FormData();
         for (const key in values) {
             if(key !== "product_images" && key !== "product_description") {
@@ -74,14 +73,30 @@ function AddProducts() {
             }
         }
         formData.append('product_description', htmlDescription);
-        fileList.forEach((file) => {
-            formData.append('images', file.originFileObj);
-        });
 
-        const result = editingProduct ? await editProducts(formData, productId) : await saveProduct(formData)
+        const imagesWithEdit = fileList.map((file) => ({
+            image_name: file.name,
+            editing: file.editing || false
+        }))
+
+
+        fileList.forEach((file) => {
+            if(!file.editing){
+                formData.append("images", file.originFileObj);
+            }
+        })
+
+        formData.append("imagesWithEdit", JSON.stringify(imagesWithEdit));
+
+        const result = editingProduct 
+        ? await editProducts(formData, productId) 
+        : await saveProduct(formData)
+
         if(result){
-            if(editingProduct) message.success('Producto editado con exito') 
-            else message.success('Producto registrado con exito')
+            message.success(editingProduct 
+                ? 'Producto editado con éxito' 
+                : 'Producto registrado con éxito'
+            );
 
             form.resetFields()
             setFileList([])
@@ -111,6 +126,7 @@ function AddProducts() {
                 uid: uuidv4(),
                 name: image.image_name,
                 status: 'done',
+                editing: true,
                 originFileObj: new File([image.image_data], image.image_name, { type: image.image_type }),
                 
             }))
@@ -129,7 +145,9 @@ useEffect(()=>{
     form.setFieldsValue({
         product_images: fileList
     })
+    console.log("FileList: ",fileList)
 },[fileList])
+
 
     return (
         <Form
