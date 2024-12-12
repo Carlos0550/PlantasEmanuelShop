@@ -1,20 +1,37 @@
 import { Button, Form, Input } from 'antd'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useAppContext } from '../../../../AppContext';
 
 function AddCategories() {
     const [form] = Form.useForm();
-    const { saveCategory, getCategories } = useAppContext()
+    const { saveCategory, 
+        getCategories, 
+        editingCategory, 
+        categoryId, 
+        categories,
+        editCategory,
+        handlerCategories
+    } = useAppContext()
     const [uploading, setUploading] = useState(false)
     const onFinish = async(values) => {
         setUploading(true)
-        const result = await saveCategory(values.category_name)
+        const result = editingCategory ? await editCategory(values.category_name, categoryId) : await saveCategory(values.category_name)
         setUploading(false)
         if(result){
             getCategories()
             form.resetFields()
+
+            if(editingCategory) handlerCategories()
         }
+        
     }
+
+    useEffect(()=>{
+        if(editingCategory && categoryId){
+            const oldCategory = categories.find(category => category.id === categoryId)
+            form.setFieldsValue({category_name: oldCategory.category_name})
+        }
+    },[editingCategory, categoryId])
   return (
     <React.Fragment>
         <Form
