@@ -3,9 +3,16 @@ import { useAppContext } from "../../../../AppContext"
 import React, { useEffect } from "react"
 import "./ProductsTable.css"
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons"
-import EditProductModal from "../../../../Components/Modales/EditProductModal"
+import EditorModal from "../../../../Components/Modales/EditorModal"
 function ProductsTable() {
-    const { getProducts, productsList, handleProducts, showProductForm, deleteProducts } = useAppContext()
+    const { getProducts, 
+        productsList, 
+        handleProducts, 
+        showProductForm, 
+        deleteProducts,
+        categories,
+        width
+    } = useAppContext()
 
     const tableColumns = [
         {
@@ -35,9 +42,22 @@ function ProductsTable() {
             dataIndex: "product_category",
             render: (_, record) => {
                 return (
-                    <span>{record.product_category}</span>
+                    <span>{categories.find(category => category.id === record.product_category)?.category_name || "Sin categoria"}</span>
                 )
             }
+        },
+        {
+            title: "Descripción",
+            render: (_,record) => (
+                <Popconfirm
+                    description={<div dangerouslySetInnerHTML={{ __html: record.product_description }}></div>}
+                    okText={"Cerrar"}
+                    overlayStyle={{ maxWidth: width }}
+                    cancelButtonProps={{ style: { display: "none" } }}
+                >
+                    <Button>Ver descripción</Button>
+                </Popconfirm>
+            )
         },
         {
             render: (_, record) => (
@@ -57,9 +77,7 @@ function ProductsTable() {
                         }}
                         okText="Sí"
                         cancelText="No"
-                        okButtonProps={{
-                            loading: false // Esto puede ser una variable de estado que actualices en `onConfirm`
-                        }}
+                        
                     >
                         <Button
                             type='primary'
@@ -81,9 +99,10 @@ function ProductsTable() {
             <Table
                 columns={tableColumns}
                 dataSource={productsList}
+                scroll={{ x: 1000 }}
             />
 
-            {showProductForm && (<EditProductModal />)}
+            {showProductForm && (<EditorModal />)}
         </React.Fragment>
     )
 }
