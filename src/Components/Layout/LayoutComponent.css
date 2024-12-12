@@ -84,10 +84,11 @@
     top: 20px; 
     cursor: pointer;
     transition: all 500ms ease-in-out;
+    z-index: 99;
 }
 
 .sider.active .menu-icon {
-    right: -20px; 
+    right: -25px; 
 }
 
 .menu-icon.active {
@@ -135,9 +136,9 @@
 }
 
 @media (max-width: 768px) {
-    .main-layout {
+    /* .main-layout {
         flex-direction: column; 
-    }
+    } */
 
     .sider {
         width: 100%; 
