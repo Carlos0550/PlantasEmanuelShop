@@ -200,11 +200,13 @@ export const AppProvider = ({ children }) => {
     const [showProductForm, setShowProductForm] = useState(false)
     const [showAlertProductForm, setShowAlertProductForm] = useState(false)
     const [productId, setProductId] = useState(null)
-    const handleProducts = (editing = false, productId = null, showProductForm = false, showAlertProuctsForm = false) => {
+    const [isDeletingProduct, setIsDeletingProduct] = useState(false)
+    const handleProducts = (editing = false, productId = null, showProductForm = false, showAlertProuctsForm = false, deletingProduct = false) => {
         setEditingProduct(editing)
         setProductId(productId)
         setShowProductForm(showProductForm)
         setShowAlertProductForm(showAlertProuctsForm)
+        setIsDeletingProduct(deletingProduct)
     }
 
     const editProducts = async(productValues, productId) => {
@@ -256,19 +258,72 @@ export const AppProvider = ({ children }) => {
         }
     }
 
+    const [editingCategory, setEditingCategory] = useState(false)
+    const [showCategoryForm, setShowCategoryForm] = useState(false)
+    const [showAlertCategories, setShowAlertCategories] = useState(false)
+    const [categoryId, setCategoryId] = useState(null)
+    const [isDeletingCategory, setIsDeletingCategory] = useState(false)
+    const handlerCategories = async(editing = false, categoryId = null, showCategoryForm = false, showAlertCategories = false, deletingCategory = false) => {
+        setEditingCategory(editing)
+        setCategoryId(categoryId)
+        setShowCategoryForm(showCategoryForm)
+        setShowAlertCategories(showAlertCategories)
+        setIsDeletingCategory(deletingCategory)
+    }
+
+    const editCategory = async(categoryValues, categoryId) => {
+        try {
+            const response = await fetch(`${apis.backend}/api/categories/edit-category/${categoryId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({category_name: categoryValues})
+            });
+
+            const responseData = await processRequests(response)
+            if(!response.ok) throw new Error(responseData.msg)
+            message.success(`${responseData.msg}`)
+            return true
+        } catch (error) {
+            console.log(error)
+            notification.error({
+                message: "No fue posible actualizar la categoría",
+                description: error.message,
+                duration: 5,
+                pauseOnHover: false,
+                showProgress: true
+            })
+            return false
+        }
+    }
+
     useEffect(()=>{
         retrieveUserData()
     },[])
     useEffect(()=>{
         if(isAdmin) navigate("/dashboard")
     },[isAdmin])
+
+    const [width, setWidth] = useState(window.innerWidth)
+
+    useEffect(() => {
+        const handleResize = () => {
+            setWidth(window.innerWidth)
+        }
+        window.addEventListener('resize', handleResize)
+        return () => {
+            window.removeEventListener('resize', handleResize)
+        }
+    },[])
     return (
         <AppContext.Provider
             value={{
                 registerUser, loginUser, loginData, isAdmin,
                 saveCategory, getCategories, categories, saveProduct,
-                productsList, getProducts, handleProducts, editingProduct, productId, showProductForm, showAlertProductForm,
-                editProducts, deleteProducts
+                productsList, getProducts, handleProducts, editingProduct, productId, showProductForm, showAlertProductForm,isDeletingProduct,
+                editProducts, deleteProducts, handlerCategories, editingCategory, categoryId, showCategoryForm, showAlertCategories, isDeletingCategory,
+                editCategory, width
             }}
         >
             {children}
