@@ -2,9 +2,9 @@ import { Button, message, notification, Table } from "antd"
 import { useAppContext } from "../../../../AppContext"
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons"
 import React, { useEffect } from "react"
-
+import EditorModal from "../../../../Components/Modales/EditorModal"
 function CategoriesTable() {
-    const { categories, getCategories } = useAppContext()
+    const { categories, getCategories, handlerCategories, showCategoryForm, showAlertCategories, } = useAppContext()
 
 
     useEffect(()=>{
@@ -19,7 +19,9 @@ function CategoriesTable() {
             render:(_,record) => {
                 return (
                     <div>
-                        <Button type='primary' icon={<EditOutlined/>}></Button>
+                        <Button type='primary' icon={<EditOutlined/>}
+                            onClick={()=> handlerCategories(true, record.id, true, false, false)}
+                        ></Button>
                         <Button type='primary' danger icon={<DeleteOutlined />}></Button>
                     </div>
                 )
@@ -41,8 +43,10 @@ function CategoriesTable() {
         columns={columns}
         dataSource={categories}
         rowKey={"category_id"}
+        style={{maxHeight: "530px", overflow: "auto"}}
         
     />
+    {showCategoryForm && <EditorModal/>}
     </React.Fragment>
   )
 }
