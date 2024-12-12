@@ -231,6 +231,31 @@ export const AppProvider = ({ children }) => {
         }
     }
 
+    const deleteProducts = async(productID) => {
+        if(!productID) return
+        try {
+            const response = await fetch(`${apis.backend}/api/products/delete-product/${productID}`, {
+                method: "DELETE"
+            });
+
+            const responseData = await processRequests(response)
+            if(!response.ok) throw new Error(responseData.msg)
+            message.success(`${responseData.msg}`)
+            getProducts()
+            return true
+        } catch (error) {
+            console.log(error)
+            notification.error({
+                message: "No fue posible eliminar el producto",
+                description: error.message,
+                duration: 5,
+                pauseOnHover: false,
+                showProgress: true
+            })
+            return false
+        }
+    }
+
     useEffect(()=>{
         retrieveUserData()
     },[])
@@ -243,7 +268,7 @@ export const AppProvider = ({ children }) => {
                 registerUser, loginUser, loginData, isAdmin,
                 saveCategory, getCategories, categories, saveProduct,
                 productsList, getProducts, handleProducts, editingProduct, productId, showProductForm, showAlertProductForm,
-                editProducts
+                editProducts, deleteProducts
             }}
         >
             {children}
