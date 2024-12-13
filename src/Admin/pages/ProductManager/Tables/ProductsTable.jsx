@@ -52,7 +52,7 @@ function ProductsTable() {
                 <Popconfirm
                     description={<div dangerouslySetInnerHTML={{ __html: record.product_description }}></div>}
                     okText={"Cerrar"}
-                    overlayStyle={{ maxWidth: width }}
+                    overlayStyle={{ maxWidth: width > 800 ? "50%" : width}}
                     cancelButtonProps={{ style: { display: "none" } }}
                 >
                     <Button>Ver descripción</Button>
