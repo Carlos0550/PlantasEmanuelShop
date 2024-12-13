@@ -47,11 +47,13 @@ function LayoutComponent({ component }) {
                                         }}>
                                             <ProductOutlined style={{ fontSize: "22px" }} /> Productos
                                         </li>
-                                        <li>
-                                            <UserOutlined style={{ fontSize: "22px" }} /> Usuarios
-                                        </li>
-                                        <li>
-                                            <OrderedListOutlined style={{ fontSize: "22px" }} /> Pedidos
+                                        <li
+                                            onClick={()=> {
+                                                if (width < 868) setResizeSideBar(true)
+                                                navigate("/manage-clients")
+                                            }}
+                                        >
+                                            <UserOutlined style={{ fontSize: "22px" }} /> Clientes
                                         </li>
                                         <li>
                                             <SettingOutlined style={{ fontSize: "22px" }} /> Ajustes
