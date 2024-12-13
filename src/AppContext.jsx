@@ -49,9 +49,9 @@ export const AppProvider = ({ children }) => {
 
     const [loginData, setLoginData] = useState({})
     const [isAdmin, setIsAdmin] = useState(false)
-    const loginUser = async (userData) => {
+    const loginAdmin = async (userData) => {
         try {
-            const response = await fetch(`${apis.backend}/api/users/login-user`, {
+            const response = await fetch(`${apis.backend}/api/admins/login-admin`, {
                 body: userData,
                 method: "POST"
             })
@@ -339,6 +339,86 @@ export const AppProvider = ({ children }) => {
         }
     }
 
+    const verifyAccountUser = async(user_email) => {
+        try {
+            const response = await fetch(`${apis.backend}/api/admins/verify-admin-data/${user_email}`)
+            const responseData = await processRequests(response)
+            
+            if(response.status === 403){
+                notification.warning({
+                    description: responseData.message,
+                    duration: 5,
+                    pauseOnHover: false,
+                    showProgress: true
+                })
+                return 403
+            }
+            if(!response.ok) throw new Error(responseData.msg)
+            return 200
+        } catch (error) {
+            console.log(error)
+            notification.error({
+                message: "No fue posible verificar la cuenta",
+                description: error.message,
+                duration: 5,
+                pauseOnHover: false,
+                showProgress: true
+            })
+            return 400
+        }
+    }
+
+    const verifyOtpAdminCode = async(otpCode, admin_email) => {
+        try {
+            const response = await fetch(`${apis.backend}/api/admins/verify-admin-otp/${otpCode}?admin_email=${admin_email}`)
+            const responseData = await processRequests(response)
+            console.log(responseData)
+            if(!response.ok) throw new Error(responseData.msg)
+                notification.success({
+                    message: "Código OTP correcto",
+                    description: "Ahora puedes ingresar la contraseña de tu cuenta"
+                })
+            return true
+        } catch (error) {
+            console.log(error)
+            notification.error({
+                message: "No fue posible verificar el OTP",
+                description: error.message,
+                duration: 5,
+                pauseOnHover: false,
+                showProgress: true
+            })
+            return false
+        }
+    }
+
+    const updateAdminPassword = async(password, admin_email) => {
+        try {
+            const response = await fetch(`${apis.backend}/api/admins/set-admin-psw/${admin_email}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({password})
+            });
+
+            const responseData = await processRequests(response)
+            if(!response.ok) throw new Error(responseData.msg)
+            message.success(`${responseData.msg}`)
+            return true
+        } catch (error) {
+            console.log(error)
+            notification.error({
+                message: "No fue posible actualizar la contraseña",
+                description: error.message,
+                duration: 5,
+                pauseOnHover: false,
+                showProgress: true
+            })
+            return false
+        }
+    }
+
     useEffect(()=>{
         retrieveUserData()
     },[])
@@ -360,11 +440,11 @@ export const AppProvider = ({ children }) => {
     return (
         <AppContext.Provider
             value={{
-                registerUser, loginUser, loginData, isAdmin,
+                registerUser, loginAdmin, loginData, isAdmin, verifyAccountUser,
                 saveCategory, getCategories, categories, saveProduct,
                 productsList, getProducts, handleProducts, editingProduct, productId, showProductForm, showAlertProductForm,isDeletingProduct,
                 editProducts, deleteProducts, handlerCategories, editingCategory, categoryId, showCategoryForm, showAlertCategories, isDeletingCategory,
-                editCategory, width, getCountProductsWithCategory, deleteCategory
+                editCategory, width, getCountProductsWithCategory, deleteCategory, verifyOtpAdminCode, updateAdminPassword
             }}
         >
             {children}
