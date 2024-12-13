@@ -298,6 +298,47 @@ export const AppProvider = ({ children }) => {
         }
     }
 
+    
+    const getCountProductsWithCategory = async(categoryID) => {
+        console.log(categoryID)
+        try {
+            const response = await fetch(`${apis.backend}/api/categories/get-count-products-with-category/${categoryID || categoryId}`)
+
+            const responseData = await processRequests(response)
+            console.log(responseData)
+            if(!response.ok) throw new Error(responseData.msg)
+            return responseData.countPrWithCat
+        } catch (error) {
+            console.log(error)
+            return 0
+        }
+    }
+
+    const deleteCategory = async(categoryID) => {
+        if(!categoryID) return
+        try {
+            const response = await fetch(`${apis.backend}/api/categories/delete-category/${categoryID}`, {
+                method: "DELETE"
+            });
+
+            const responseData = await processRequests(response)
+            if(!response.ok) throw new Error(responseData.msg)
+            message.success(`${responseData.msg}`)
+            getCategories()
+            return true
+        } catch (error) {
+            console.log(error)
+            notification.error({
+                message: "No fue posible eliminar la categoría",
+                description: error.message,
+                duration: 5,
+                pauseOnHover: false,
+                showProgress: true
+            })
+            return false
+        }
+    }
+
     useEffect(()=>{
         retrieveUserData()
     },[])
@@ -323,7 +364,7 @@ export const AppProvider = ({ children }) => {
                 saveCategory, getCategories, categories, saveProduct,
                 productsList, getProducts, handleProducts, editingProduct, productId, showProductForm, showAlertProductForm,isDeletingProduct,
                 editProducts, deleteProducts, handlerCategories, editingCategory, categoryId, showCategoryForm, showAlertCategories, isDeletingCategory,
-                editCategory, width
+                editCategory, width, getCountProductsWithCategory, deleteCategory
             }}
         >
             {children}
