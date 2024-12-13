@@ -14,7 +14,7 @@ function App() {
       <Route path="/register" element={<Register />}/>
       <Route path="/dashboard" element={<LayoutComponent component={<Dashboard/>}/>}/>
       <Route path="/manage-products" element={<LayoutComponent component={<ProductsManager/>}/>}/>
-      <Route path="/manage-categories" element={<LayoutComponent component={<ClientsManager/>}/>}/>
+      <Route path="/manage-clients" element={<LayoutComponent component={<ClientsManager/>}/>}/>
 
       {/* Rutas para los clientes */}
     </Routes>
