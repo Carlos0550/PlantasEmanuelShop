@@ -1,11 +1,18 @@
 import { Button, Popconfirm, Space, Table } from 'antd'
-import React from 'react'
+import React, { useState } from 'react'
 import './PromotionTable.css'
 import { useAppContext } from '../../../../AppContext'
 import dayjs from "dayjs"
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons'
 function PromotionsTable() {
-    const { promotions, productsList } = useAppContext()
+    const { promotions, productsList, getAllPromotions, deletePromotion } = useAppContext()
+    const [deleting, setDeleting] = useState(false)
+    const handleDelete = async(promotion_id) => {
+        setDeleting(true)
+        await deletePromotion(promotion_id)
+        await getAllPromotions()
+        setDeleting(false)
+    }
     const tableColumns = [
         {
            render:(_,record) => {
@@ -78,7 +85,15 @@ function PromotionsTable() {
             render:(_,record) => (
                 <Space direction='vertical'>
                     <Button type='primary' icon={<EditOutlined/>}/>
-                    <Button type='primary' danger icon={<DeleteOutlined/>}/>
+                    <Popconfirm
+                        title={"Eliminar promocion"}
+                        description={"¿Estas seguro de eliminar la promocion?"}
+                        okText={"Eliminar"}
+                        cancelText={"Cancelar"}
+                        onConfirm={()=> handleDelete(record.promotion_id)}
+                    >
+                        <Button type='primary' danger icon={<DeleteOutlined/>}/>
+                    </Popconfirm>
                 </Space>
             )
         }
@@ -89,6 +104,7 @@ function PromotionsTable() {
             columns={tableColumns}
             dataSource={promotions}
             scroll={{ x: "max-content" }}
+            loading={deleting}
         />
     </React.Fragment>
   )
