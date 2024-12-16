@@ -464,6 +464,27 @@ export const AppProvider = ({ children }) => {
             })
             return false
         }
+    };
+
+    const deletePromotion = async(promotionID) => {
+        try {
+            const response = await fetch(`${apis.backend}/api/promotions/delete-promotion/${promotionID}`,{
+                method: "DELETE"
+            })
+
+            const responseData = await processRequests(response)
+            if(!response.ok) throw new Error(responseData.msg)
+            message.success(`${responseData.msg}`) 
+        } catch (error) {
+            console.log(error)
+            notification.error({
+                message: "No fue posible eliminar la promocion",
+                description: error.message,
+                duration: 5,
+                pauseOnHover: false,
+                showProgress: true
+            })
+        }
     }
 
     const alreadyRetrieveUser = useRef(false)
@@ -532,7 +553,7 @@ export const AppProvider = ({ children }) => {
                 productsList, getProducts, handleProducts, editingProduct, productId, showProductForm, showAlertProductForm,isDeletingProduct,
                 editProducts, deleteProducts, handlerCategories, editingCategory, categoryId, showCategoryForm, showAlertCategories, isDeletingCategory,
                 editCategory, width, getCountProductsWithCategory, deleteCategory, verifyOtpAdminCode, updateAdminPassword,
-                savePromotion, promotions, getAllPromotions
+                savePromotion, promotions, getAllPromotions, deletePromotion
             }}
         >
             {children}
