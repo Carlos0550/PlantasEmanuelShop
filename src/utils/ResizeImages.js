@@ -1,5 +1,5 @@
 // utils/ResizeImages.js
-export const resizeAndConvertImages = async (files, maxWidth = 300, maxHeight = 300, quality = 0.8) => {
+export const resizeAndConvertImages = async (files, maxWidth = 800, maxHeight = 800, quality = 0.8) => {
     try {
         // Aseguramos que files siempre sea un array
         const fileArray = Array.isArray(files) ? files : [files];
@@ -12,12 +12,12 @@ export const resizeAndConvertImages = async (files, maxWidth = 300, maxHeight = 
                 reader.onload = (event) => {
                     const img = new Image();
                     img.src = event.target.result;
-
+                    console.log("Ancho: " + img.width + " Alto: " + img.height)
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
                         let width = img.width;
                         let height = img.height;
-
+                        
                         // Redimensionar la imagen manteniendo la proporción
                         if (width > maxWidth || height > maxHeight) {
                             if (width > height) {
@@ -31,7 +31,7 @@ export const resizeAndConvertImages = async (files, maxWidth = 300, maxHeight = 
 
                         canvas.width = width;
                         canvas.height = height;
-
+                        console.log("Ancho: " + width + " Alto: " + height)
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
 
