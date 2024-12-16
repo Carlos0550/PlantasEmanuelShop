@@ -11,6 +11,7 @@ import { v4 as uuidv4 } from 'uuid';
 import dayjs from "dayjs"
 
 import { InboxOutlined } from "@ant-design/icons";
+import "./PromotionForm.css"
 function PromotionForm() {
     const [form] = Form.useForm();
     const [editorState, setEditorState] = useState(EditorState.createEmpty());
@@ -325,6 +326,18 @@ function PromotionForm() {
                     }}
                 />
             </Form.Item>
+
+            <div>
+                <p className='preview_p'>Vista previa</p>
+                <div className='preview_images'>
+                {fileList.map((file) => (
+                    <div key={file.name} className='preview_image'>
+                        {console.log(file)}
+                        <img src={file.thumbUrl} alt={file.name} />
+                    </div>
+                ))}
+                </div>
+            </div>
 
             <Form.Item
                 name="promotion_images"
