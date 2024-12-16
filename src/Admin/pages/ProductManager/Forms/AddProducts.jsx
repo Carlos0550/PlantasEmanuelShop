@@ -18,7 +18,7 @@ function AddProducts() {
         productId, handleProducts, productsList, editProducts
 
     } = useAppContext();
-    console.log(productId)
+
     const [fileList, setFileList] = useState([]);
     const [editorState, setEditorState] = useState(EditorState.createEmpty());
 
@@ -35,13 +35,14 @@ function AddProducts() {
         beforeUpload: async (file) => {
             try {
                 const [compressedFile] = await resizeAndConvertImages([file]);
+
                 const newFileList = {
                     uid: uuidv4(),
                     name: compressedFile.name,
-                    status: 'done',
+                    status: 'success',
                     originFileObj: compressedFile,
                     editing: false,
-                    thumbUrl: URL.createObjectURL(compressedFile) 
+                    thumbUrl: URL.createObjectURL(compressedFile),
                 };
 
                 setFileList((prevList) => [...prevList, newFileList]);
@@ -145,7 +146,6 @@ useEffect(()=>{
     form.setFieldsValue({
         product_images: fileList
     })
-    console.log("FileList: ",fileList)
 },[fileList])
 
 
@@ -216,7 +216,7 @@ useEffect(()=>{
                
                 getValueFromEvent={(e) => e && e.fileList}
             >
-                <Dragger {...uploadProps} fileList={fileList}>
+                <Dragger {...uploadProps} fileList={fileList} maxCount={3}>
                     <p className="ant-upload-drag-icon">
                         <InboxOutlined />
                     </p>

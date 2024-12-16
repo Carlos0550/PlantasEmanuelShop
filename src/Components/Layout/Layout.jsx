@@ -1,10 +1,10 @@
 import './LayoutComponent.css';
 import logoImg from "../../public/assets/logo.png"
-import { HomeOutlined, MenuOutlined, OrderedListOutlined, ProductOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
+import { HomeOutlined, MenuOutlined, ProductOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../../AppContext';
-
+import PromotionIcon from "../../public/assets/icons/discount-tag-discount-ecommerce-svgrepo-com.svg"
 function LayoutComponent({ component }) {
     const navigate = useNavigate()
     const [resizeSideBar, setResizeSideBar] = useState(false)
@@ -47,6 +47,16 @@ function LayoutComponent({ component }) {
                                         }}>
                                             <ProductOutlined style={{ fontSize: "22px" }} /> Productos
                                         </li>
+
+                                        <li
+                                            onClick={()=>{
+                                                if (width < 868) setResizeSideBar(true)
+                                                navigate("/manage-promotions")
+                                            }}
+                                        >
+                                            <img src={PromotionIcon} width={24} height={24}/>Promociones
+                                        </li>
+
                                         <li
                                             onClick={()=> {
                                                 if (width < 868) setResizeSideBar(true)

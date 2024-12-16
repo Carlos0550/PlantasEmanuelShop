@@ -128,6 +128,8 @@ function Login() {
                             name="otp__form"
                             onFinish={onOtpSubmit}
                             layout="vertical"
+                            style={{ width: "100%" }}
+
                         >
                             <Form.Item
                                 name="otp_result"
@@ -148,6 +150,7 @@ function Login() {
                             name="password__form"
                             onFinish={onPasswordSubmit}
                             layout="vertical"
+                            style={{ width: "100%" }}
                         >
                             <Form.Item
                                 label="Contraseña"
