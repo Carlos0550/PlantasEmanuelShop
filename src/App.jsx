@@ -6,6 +6,7 @@ import Dashboard from "./Admin/pages/Dashboard/Dashboard"
 import LayoutComponent from "./Components/Layout/Layout"
 import ProductsManager from "./Admin/pages/ProductManager/ProductsManager"
 import ClientsManager from "./Admin/pages/Clients/ClientsManager"
+import PromotionsManager from "./Admin/pages/Promotions/PromotionsManager"
 function App() {
   return (
     <Routes>
@@ -15,7 +16,7 @@ function App() {
       <Route path="/dashboard" element={<LayoutComponent component={<Dashboard/>}/>}/>
       <Route path="/manage-products" element={<LayoutComponent component={<ProductsManager/>}/>}/>
       <Route path="/manage-clients" element={<LayoutComponent component={<ClientsManager/>}/>}/>
-
+      <Route path="manage-promotions" element={<LayoutComponent component={<PromotionsManager/>}/>}/>
       {/* Rutas para los clientes */}
     </Routes>
    
