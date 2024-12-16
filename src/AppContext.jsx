@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import PropTypes from 'prop-types';
 import { apis } from './utils/apis';
 import { processRequests } from './utils/processRequests';
@@ -419,9 +419,95 @@ export const AppProvider = ({ children }) => {
         }
     }
 
+    const savePromotion = async(promotionValues) => {
+        try {
+            const response = await fetch(`${apis.backend}/api/promotions/save-promotion`,{
+                method: "POST",
+                body: promotionValues
+            })
+
+            const responseData = await processRequests(response)
+            if(!response.ok) throw new Error(responseData.msg)
+                console.log(responseData)
+            message.success(`${responseData.msg}`)
+            getAllPromotions()
+            return true
+        } catch (error) {
+            console.log(error)
+            notification.error({
+                message: "No fue posible guardar la promoción",
+                description: error.message,
+                duration: 5,
+                pauseOnHover: false,
+                showProgress: true
+            })
+            return false
+        }
+    }
+
+    const [promotions, setPromotions] = useState([])
+    const getAllPromotions = async() => {
+        try {
+            const response = await fetch(`${apis.backend}/api/promotions/get-promotions`)
+            const responseData = await processRequests(response)
+            if(response.status === 404) return;
+            if(!response.ok) throw new Error(responseData.msg)
+            setPromotions(responseData.promotions)
+        } catch (error) {
+            console.log(error)
+            notification.error({
+                message: "No fue posible obtener las promociones",
+                description: error.message,
+                duration: 5,
+                pauseOnHover: false,
+                showProgress: true
+            })
+            return false
+        }
+    }
+
+    const alreadyRetrieveUser = useRef(false)
     useEffect(()=>{
-        retrieveUserData()
+        (async()=>{
+            if(!loginData && !alreadyRetrieveUser.current){
+                alreadyRetrieveUser.current = true
+                await retrieveUserData()
+            }
+        })()
+        console.log(loginData)
+    },[loginData])
+
+    const appIsReady = useRef(false)
+    useEffect(()=>{
+        (async()=>{
+            if(!appIsReady.current ){
+                const hiddenMessage = message.loading("Iniciando sistema", 0)
+                appIsReady.current = true
+                try {
+                    await Promise.all([
+                       getCategories(),
+                       getProducts(),
+                       getAllPromotions()
+                    ]);
+                    
+                 } catch (error) {
+                    message.error("Hubo un error al cargar los datos")
+                    console.error(error)
+                 }finally{
+                    hiddenMessage()
+                    message.success("Sistema listo", 2)
+                 } 
+            }
+        })()
     },[])
+
+    useEffect(()=>{
+        console.log("Categorias", categories)
+        console.log("Productos", productsList)
+        console.log("Promociones", promotions)
+    },[promotions, productsList, categories])
+
+
     useEffect(()=>{
         if(isAdmin) navigate("/dashboard")
     },[isAdmin])
@@ -437,6 +523,7 @@ export const AppProvider = ({ children }) => {
             window.removeEventListener('resize', handleResize)
         }
     },[])
+
     return (
         <AppContext.Provider
             value={{
@@ -444,7 +531,8 @@ export const AppProvider = ({ children }) => {
                 saveCategory, getCategories, categories, saveProduct,
                 productsList, getProducts, handleProducts, editingProduct, productId, showProductForm, showAlertProductForm,isDeletingProduct,
                 editProducts, deleteProducts, handlerCategories, editingCategory, categoryId, showCategoryForm, showAlertCategories, isDeletingCategory,
-                editCategory, width, getCountProductsWithCategory, deleteCategory, verifyOtpAdminCode, updateAdminPassword
+                editCategory, width, getCountProductsWithCategory, deleteCategory, verifyOtpAdminCode, updateAdminPassword,
+                savePromotion, promotions, getAllPromotions
             }}
         >
             {children}
