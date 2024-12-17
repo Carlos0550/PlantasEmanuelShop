@@ -62,9 +62,10 @@ export const AppProvider = ({ children }) => {
             notification.success({
                 message: responseData.msg,
             });
+            
             setLoginData(responseData.user)
             if(responseData.user.admin) setIsAdmin(true)
-            localStorage.setItem("user", JSON.stringify(responseData.user))
+            else setIsAdmin(false)
             return true
         } catch (error) {
             console.log(error)
@@ -79,24 +80,6 @@ export const AppProvider = ({ children }) => {
         }
     }
     
-    const retrieveUserData = () =>{
-        try {
-            const user = JSON.parse(localStorage.getItem("user"))
-            console.log(user)
-            if(user) setLoginData(user)
-            else navigate("/")
-        } catch (error) {
-            console.log(error)
-            notification.error({
-                message: "Error al verificar su sesión",
-                duration: 3,
-                pauseOnHover: false,
-                showProgress: true
-            })
-            localStorage.removeItem("user")
-            return navigate("/")
-        }
-    } 
 
     const saveCategory = async(categoryName) => {
         try {
@@ -487,21 +470,21 @@ export const AppProvider = ({ children }) => {
         }
     }
 
-    const alreadyRetrieveUser = useRef(false)
-    useEffect(()=>{
-        (async()=>{
-            if(!loginData && !alreadyRetrieveUser.current){
-                alreadyRetrieveUser.current = true
-                await retrieveUserData()
-            }
-        })()
-        console.log(loginData)
-    },[loginData])
+    // const alreadyRetrieveUser = useRef(false)
+    // useEffect(()=>{
+    //     (async()=>{
+    //         if(!loginData && !alreadyRetrieveUser.current){
+    //             alreadyRetrieveUser.current = true
+    //             await loginAdmin()
+    //         }
+    //     })()
+    //     console.log(loginData)
+    // },[loginData])
 
     const appIsReady = useRef(false)
     useEffect(()=>{
         (async()=>{
-            if(!appIsReady.current ){
+            if(!appIsReady.current && loginData.id){
                 const hiddenMessage = message.loading("Iniciando sistema", 0)
                 appIsReady.current = true
                 try {
@@ -520,7 +503,7 @@ export const AppProvider = ({ children }) => {
                  } 
             }
         })()
-    },[])
+    },[loginData])
 
     useEffect(()=>{
         console.log("Categorias", categories)
@@ -528,10 +511,16 @@ export const AppProvider = ({ children }) => {
         console.log("Promociones", promotions)
     },[promotions, productsList, categories])
 
-
+    
     useEffect(()=>{
+        if(!loginData.id) {
+            console.log("No hay login data")
+            navigate("/")
+            return
+        }
+        console.log("loginData: ",loginData)
         if(isAdmin) navigate("/dashboard")
-    },[isAdmin])
+    },[isAdmin, loginData])
 
     const [width, setWidth] = useState(window.innerWidth)
 
