@@ -1,28 +1,50 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Button, DatePicker, Flex, Form, Input, message, notification, Select, Space, Switch, Upload } from 'antd'
 import { EditorState, ContentState, convertToRaw, convertFromHTML } from 'draft-js';
+
 import { Editor } from 'react-draft-wysiwyg';
 import { stateToHTML } from 'draft-js-export-html';
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
+
 import { useAppContext } from '../../../../AppContext';
 import { resizeAndConvertImages } from '../../../../utils/ResizeImages';
 const { Dragger } = Upload
-import { v4 as uuidv4 } from 'uuid';
+
 import dayjs from "dayjs"
 
 import { InboxOutlined } from "@ant-design/icons";
 import "./PromotionForm.css"
 function PromotionForm() {
     const [form] = Form.useForm();
+
     const [editorState, setEditorState] = useState(EditorState.createEmpty());
     const [isSinglePromotion, setIsSinglePromotion] = useState(false)
-    const { productsList, width, savePromotion } = useAppContext()
+
+    const { productsList,
+        width,
+        savePromotion,
+        promotionID,
+        editingPromotion,
+        promotions,
+        editPromotion,
+        handlePromotions
+    } = useAppContext()
+
     const [fileList, setFileList] = useState([]);
+
     const [promotionStartDate, setPromotionStartDate] = useState();
+
     const [promotionEndsDate, setPromotionEndsDate] = useState();
+
     const [totalProducts, setTotalProducts] = useState(0);
+
     const [saving, setSaving] = useState(false);
+
     const [products, setProducts] = useState([]);
+
+    const [promotion_discount, setPromotion_discount] = useState("");
+    const [selectedProduct, setSelectedProduct] = useState(null);
+    const [productsListTotal, setProductsListTotal] = useState(0)
     const onFinish = async (values) => {
         setSaving(true)
         const htmlDescription = stateToHTML(editorState.getCurrentContent());
@@ -30,35 +52,64 @@ function PromotionForm() {
         const promotionType = isSinglePromotion ? "single" : "multiple";
 
         Object.entries(values).forEach(([key, value]) => {
-            if (!["promotion_images", "promotion_description", "promotion_start_date", "promotion_end_date", "promotion_products"].includes(key)) {
+            if (!["promotion_images", "promotion_description", "promotion_start_date", "promotion_end_date", "promotion_products", "promotion_discount", "product_id"].includes(key)) {
                 formData.append(key, value || "");
             }
         });
 
         formData.append("promotion_type", promotionType);
+        formData.append("promotion_discount", promotion_discount);
         formData.append("promotion_description", htmlDescription);
+        formData.append("product_id", isSinglePromotion ? selectedProduct : "");
         formData.append("promotion_start_date", dayjs(promotionStartDate).format("YYYY-MM-DD"));
         formData.append("promotion_end_date", dayjs(promotionEndsDate).format("YYYY-MM-DD"));
         fileList.forEach((file) => {
             formData.append("promotion_images", file.originFileObj)
         })
 
-        formData.append("promotion_products", JSON.stringify(products));
+        const imagesWithEdit = fileList.map((file) => ({
+            image_name: file.name,
+            editing: file.editing || false
+        }))
+
+        formData.append("imagesWithEdit", JSON.stringify(imagesWithEdit));
+
+
+        formData.append("promotion_products", isSinglePromotion ? "" : JSON.stringify(products));
         formData.append("promotion_value", totalProducts || "");
-        console.log(formData.get("promotion_products"))
-        const result = await savePromotion(formData)
+        
+        editingPromotion && formData.append(
+            "promotion_state", 
+            dayjs().isAfter(dayjs(promotionStartDate)) || dayjs().isSame(dayjs(promotionStartDate))
+          );
+          
+        const result = editingPromotion ? await editPromotion(formData) : await savePromotion(formData)
         setSaving(false)
+        console.log(result)
         if (result) {
             form.resetFields()
             setFileList([])
             setEditorState(EditorState.createEmpty())
             setTotalProducts(0)
             setProducts([])
+            setProductsListTotal(0)
+            setSelectedProduct(null)
+            setIsSinglePromotion(false)
         }
 
     };
 
-
+    const handleCancelEdit = () =>{
+        handlePromotions()
+        form.resetFields()
+        setFileList([])
+        setEditorState(EditorState.createEmpty())
+        setTotalProducts(0)
+        setProducts([])
+        setProductsListTotal(0)
+        setSelectedProduct(null)
+        setIsSinglePromotion(false)
+    }
     const onEditorStateChange = (newState) => {
         setEditorState(newState);
         const rawContext = convertToRaw(newState.getCurrentContent());
@@ -107,7 +158,11 @@ function PromotionForm() {
     }, [fileList])
 
     const handleVerifyProducts = (products) => {
-        if (!products || products.length === 0) return ["La lista de productos no puede estar vacía"];
+        
+        if (!products || products.length === 0){
+            setProductsListTotal(0)
+            return ["La lista de productos no puede estar vacía"];
+        }
 
         const errors = [];
         let total = 0
@@ -149,11 +204,80 @@ function PromotionForm() {
         }
         setTotalProducts(total)
         setProducts(productsList)
+        console.warn("Calculo total: ",total)
+        !isSinglePromotion && setProductsListTotal(total)
         return true;
     };
 
     const validationTimeout = useRef(null);
 
+    useEffect(()=>{
+        if(editingPromotion && promotionID !== null){
+            const selectedPromo = promotions.find(promo => promo.promotion_id === promotionID)
+
+            setIsSinglePromotion(selectedPromo.promotion_type === "single" ? true : false)
+            
+            const htmlDescription = selectedPromo.promotion_data?.promotion_description
+
+            const blockFromHTML = convertFromHTML(htmlDescription || "<div></div>");
+            const contentState = ContentState.createFromBlockArray(blockFromHTML.contentBlocks, blockFromHTML.entityMap);
+            const editorState = EditorState.createWithContent(contentState);
+
+            setEditorState(editorState)
+
+            setPromotionStartDate(dayjs(selectedPromo.promotion_starts))
+            setPromotionEndsDate(dayjs(selectedPromo.promotion_ends))
+
+            const promotionImages = selectedPromo.images;
+
+            const formattedImages = promotionImages.map((image) => ({
+                name: image.image_name,
+                status: 'done',
+                editing: true,
+                originFileObj: new File([image.image], image.image_name, { type: image.image_type }),
+                thumbUrl: image.image
+            }))
+    
+            setFileList(formattedImages)
+            setPromotion_discount(selectedPromo.promotion_discount || 0)
+            setSelectedProduct(selectedPromo.promotion_data?.product_id || "")
+            const productsList = selectedPromo.promotion_data?.promotion_products_array
+            console.log(productsList)
+            !isSinglePromotion && handleVerifyProducts(Array.isArray(productsList) && productsList?.length > 0 ? productsList?.map(prod => `${prod.quantity} ${prod.productName} ${prod.productPrice}`).join("\n") : "")
+            form.setFieldsValue({
+                promotion_name: selectedPromo.promotion_name,
+                promotion_discount: selectedPromo.promotion_discount || 0,
+                promotion_description: selectedPromo.promotion_description,
+                product_id: selectedPromo.promotion_data.product_id,
+                promotion_start_date: dayjs(selectedPromo.promotion_starts),
+                promotion_end_date: dayjs(selectedPromo.promotion_ends),
+                promotion_images: formattedImages,
+                promotion_products: Array.isArray(productsList) && productsList?.length > 0 ? productsList?.map(prod => `${prod.quantity} ${prod.productName} ${prod.productPrice}`).join("\n") : ""
+            })
+        }
+    },[promotionID, editingPromotion])
+
+    useEffect(() => {
+        console.warn("productsListTotal: ", productsListTotal)
+        if (isSinglePromotion) {   
+            console.log("Promocion simple")
+ 
+            const productPrice = productsList.find(prod => prod.id === selectedProduct)?.product_price;
+            console.log("ProductPrice", productPrice)
+            const discount = promotion_discount === "" ? 0 : parseFloat(promotion_discount);
+    
+            const discountPrice = productPrice ? (productPrice * (1 - discount / 100)) : productPrice;
+            
+            setTotalProducts(discountPrice);
+        }else{
+            console.log("Promocion multiple")
+            const discount = promotion_discount === "" ? 0 : parseFloat(promotion_discount);
+            console.log("Descuento", discount)
+            const discountPrice = productsListTotal ? (productsListTotal * (1 - discount / 100)) : productsListTotal;
+            setTotalProducts(discountPrice)
+        }
+    }, [isSinglePromotion, promotion_discount, selectedProduct, productsListTotal]);
+    
     return (
         <Form
             onFinish={onFinish}
@@ -181,7 +305,7 @@ function PromotionForm() {
                 name={"promotion_discount"}
                 label="Descuento a aplicar"
             >
-                <Input placeholder='20%' style={{ maxWidth: width < 568 ? "100%" : "30%" }}/>
+                <Input placeholder='20%' style={{ maxWidth: width < 568 ? "100%" : "30%" }} onChange={(e) => setPromotion_discount(e.target.value)}/>
             </Form.Item>
 
             <Flex wrap gap={10} justify='space-around' vertical>
@@ -202,7 +326,7 @@ function PromotionForm() {
                     name={"product_id"}
                     label="Producto a ofertar"
                 >
-                    <Select placeholder="Seleccione un producto" style={{ maxWidth: width < 568 ? "100%" : "50%" }}
+                    <Select placeholder="Seleccione un producto" onChange={(value) => setSelectedProduct(value)} style={{ maxWidth: width < 568 ? "100%" : "50%" }}
                         showSearch optionFilterProp="children"
                         filterOption={(input, option) => {
                             return option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -254,7 +378,11 @@ function PromotionForm() {
                     <Input.TextArea style={{ resize: "none", height: "100px" }} />
                 </Form.Item>
             }
-            <p style={{ marginBottom: "10px" }}><strong>Total de productos:</strong> {totalProducts.toLocaleString("es-AR", { style: "currency", currency: "ARS" })}</p>
+            <p style={{ marginBottom: "10px" }}>
+                <strong>Total de productos:</strong> 
+                {totalProducts?.toLocaleString("es-AR", { style: "currency", currency: "ARS" })}
+
+            </p>
 
 
             <Space wrap>
@@ -296,7 +424,6 @@ function PromotionForm() {
                             validator: (_, value) => {
                                 if (value) {
                                     const selectedDate = dayjs(value);
-                                    const currentDate = dayjs();
                                     if (!selectedDate || !selectedDate.isValid()) return Promise.resolve()
 
                                     if (selectedDate.isBefore(form.getFieldValue("promotion_start_date"))) {
@@ -330,12 +457,11 @@ function PromotionForm() {
             <div>
                 <p className='preview_p'>Vista previa</p>
                 <div className='preview_images'>
-                {fileList.map((file) => (
-                    <div key={file.name} className='preview_image'>
-                        {console.log(file)}
-                        <img src={file.thumbUrl} alt={file.name} />
-                    </div>
-                ))}
+                    {fileList.map((file) => (
+                        <div key={file.name} className='preview_image'>
+                            <img src={file.thumbUrl} alt={file.name} />
+                        </div>
+                    ))}
                 </div>
             </div>
 
@@ -371,7 +497,10 @@ function PromotionForm() {
             </Form.Item>
 
             <Form.Item>
-                <Button loading={saving} htmlType='submit' type='primary'>Guardar Promoción</Button>
+                <Space>
+                    <Button loading={saving} htmlType='submit' type='primary'>Guardar Promoción</Button>
+                    {editingPromotion && <Button type='primary' danger onClick={()=> handleCancelEdit()}>Cancelar editado</Button>}
+                </Space>
             </Form.Item>
         </Form>
     )
