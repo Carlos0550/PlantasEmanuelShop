@@ -4,6 +4,13 @@ import { apis } from './utils/apis';
 import { processRequests } from './utils/processRequests';
 import { message, notification } from "antd"
 import { useNavigate } from 'react-router-dom';
+import dayjs from "dayjs"
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
+
 const AppContext = createContext()
 
 export const useAppContext = () => {
@@ -64,6 +71,13 @@ export const AppProvider = ({ children }) => {
             });
             
             setLoginData(responseData.user)
+            const expiredSession = dayjs().add(1, "day").format("YYYY-MM-DD")
+            const sessionData = {
+                ...responseData.user,
+                expired_session: expiredSession
+            }
+
+            localStorage.setItem("session_data", JSON.stringify(sessionData))
             if(responseData.user.admin) setIsAdmin(true)
             else setIsAdmin(false)
             return true
@@ -117,7 +131,8 @@ export const AppProvider = ({ children }) => {
                 return setCategories([])
             };
             if(!response.ok) throw new Error(responseData.msg)
-            setCategories(responseData.categories)
+            if(responseData.categories.length > 0) setCategories(responseData.categories)
+            else setCategories([])
             return true
         } catch (error) {
             console.log(error)
@@ -166,7 +181,9 @@ export const AppProvider = ({ children }) => {
             const responseData = await processRequests(response)
             if(response.status === 404) return;
             if(!response.ok) throw new Error(responseData.msg)
-            setProductsList(responseData.products)
+
+            if(responseData.products.length > 0) setProductsList(responseData.products)
+            else setProductsList([])
         } catch (error) {
             console.log(error)
             notification.error({
@@ -435,7 +452,9 @@ export const AppProvider = ({ children }) => {
             const responseData = await processRequests(response)
             if(response.status === 404) return;
             if(!response.ok) throw new Error(responseData.msg)
-            setPromotions(responseData.promotions)
+            if(responseData.promotions.length > 0) setPromotions(responseData.promotions)
+            else setPromotions([])
+            return true
         } catch (error) {
             console.log(error)
             notification.error({
@@ -470,21 +489,42 @@ export const AppProvider = ({ children }) => {
         }
     }
 
-    // const alreadyRetrieveUser = useRef(false)
-    // useEffect(()=>{
-    //     (async()=>{
-    //         if(!loginData && !alreadyRetrieveUser.current){
-    //             alreadyRetrieveUser.current = true
-    //             await loginAdmin()
-    //         }
-    //     })()
-    //     console.log(loginData)
-    // },[loginData])
+    const [promotionID, setPromotionID] = useState(null)
+    const [editingPromotion, setEditingPromotion] = useState(false)
+    const handlePromotions = (promotion_id = null, editing = false) => {
+        setPromotionID(promotion_id)
+        setEditingPromotion(editing)
+    }
 
+    const editPromotion = async(promotionData) => {
+        try {
+            const response = await fetch(`${apis.backend}/api/promotions/edit-promotion/${promotionID}`,{
+                method: "PUT",
+                body: promotionData
+            })
+
+            const responseData = await processRequests(response)
+            if(!response.ok) throw new Error(responseData.msg)
+            message.success(`${responseData.msg}`)
+            getAllPromotions()
+            handlePromotions()
+            return true
+        } catch (error) {
+            console.log(error)
+            notification.error({
+                message: "No fue posible editar la promocion",
+                description: error.message,
+                duration: 5,
+                pauseOnHover: false,
+                showProgress: true
+            })
+            return false
+        }
+    }
     const appIsReady = useRef(false)
     useEffect(()=>{
         (async()=>{
-            if(!appIsReady.current && loginData.id){
+            if(!appIsReady.current && loginData.id){ 
                 const hiddenMessage = message.loading("Iniciando sistema", 0)
                 appIsReady.current = true
                 try {
@@ -504,22 +544,49 @@ export const AppProvider = ({ children }) => {
             }
         })()
     },[loginData])
-
-    useEffect(()=>{
-        console.log("Categorias", categories)
-        console.log("Productos", productsList)
-        console.log("Promociones", promotions)
-    },[promotions, productsList, categories])
-
     
-    useEffect(()=>{
-        if(!loginData.id) {
-            console.log("No hay login data")
+    useEffect(() => {
+        const session_data = localStorage.getItem("session_data")
+        
+        if (!session_data) {
             navigate("/")
             return
         }
-        console.log("loginData: ",loginData)
+    
+        let data;
+        try {
+            data = JSON.parse(session_data)
+        } catch (error) {
+            console.error("Error al parsear session_data:", error)
+            localStorage.removeItem("session_data")
+            navigate("/") 
+            return 
+        }
+    
+        if (!data) {
+            console.warn("No se encontró la data de la sesión.")
+            navigate("/")
+            return 
+        }
+    
+        console.log("Datos de la sesión:", data)
+        
+        const argentinaTime = dayjs().tz("America/Buenos_Aires")
+    
+        if (data?.session_timeout && argentinaTime.isAfter(data?.session_timeout)) {
+            console.log("La sesión ha expirado. Eliminando datos de sesión...")
+            localStorage.removeItem("session_data")
+            navigate("/")
+            return 
+        }
+        setLoginData(data)
+        if (data?.admin) setIsAdmin(true)
+    }, [])
+    
+
+    useEffect(()=>{
         if(isAdmin) navigate("/dashboard")
+        
     },[isAdmin, loginData])
 
     const [width, setWidth] = useState(window.innerWidth)
@@ -542,7 +609,8 @@ export const AppProvider = ({ children }) => {
                 productsList, getProducts, handleProducts, editingProduct, productId, showProductForm, showAlertProductForm,isDeletingProduct,
                 editProducts, deleteProducts, handlerCategories, editingCategory, categoryId, showCategoryForm, showAlertCategories, isDeletingCategory,
                 editCategory, width, getCountProductsWithCategory, deleteCategory, verifyOtpAdminCode, updateAdminPassword,
-                savePromotion, promotions, getAllPromotions, deletePromotion
+                savePromotion, promotions, getAllPromotions, deletePromotion, handlePromotions, promotionID, editingPromotion,
+                editPromotion
             }}
         >
             {children}
