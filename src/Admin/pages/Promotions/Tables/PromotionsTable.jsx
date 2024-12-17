@@ -5,13 +5,17 @@ import { useAppContext } from '../../../../AppContext'
 import dayjs from "dayjs"
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons'
 function PromotionsTable() {
-    const { promotions, productsList, getAllPromotions, deletePromotion } = useAppContext()
+    const { promotions, productsList, getAllPromotions, deletePromotion,handlePromotions}  = useAppContext()
     const [deleting, setDeleting] = useState(false)
     const handleDelete = async(promotion_id) => {
         setDeleting(true)
         await deletePromotion(promotion_id)
         await getAllPromotions()
         setDeleting(false)
+    }
+
+    const handleEditPromotion = (promotionId) => {
+        handlePromotions(promotionId,true)
     }
     const tableColumns = [
         {
@@ -67,10 +71,10 @@ function PromotionsTable() {
 
             title: "Producto/s",
             render: (_,record) => {
-                const products = record.promotion_data.promotion_products_array
-                const singleProduct = productsList.find(prod => prod.id === record.promotion_data.product_id)
+                const products = record?.promotion_data?.promotion_products_array
+                const singleProduct = productsList.find(prod => prod.id === record?.promotion_data.product_id)
                 return(
-                    <em>{singleProduct ? singleProduct.product_name : products.map(prod => `${prod.quantity} ${prod.productName}`).join(", ")}</em>
+                    <em>{singleProduct ? singleProduct?.product_name : products?.map(prod => `${prod.quantity} ${prod.productName}`).join(", ")}</em>
                 )
             }
         },{
@@ -84,7 +88,7 @@ function PromotionsTable() {
         },{
             render:(_,record) => (
                 <Space direction='vertical'>
-                    <Button type='primary' icon={<EditOutlined/>}/>
+                    <Button type='primary' icon={<EditOutlined/>} onClick={()=> handleEditPromotion(record.promotion_id)}/>
                     <Popconfirm
                         title={"Eliminar promocion"}
                         description={"¿Estas seguro de eliminar la promocion?"}
