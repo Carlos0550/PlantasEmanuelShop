@@ -1,4 +1,4 @@
-import { Card, Col, Row, Table } from 'antd'
+import { Button, Card, Col, Row, Table } from 'antd'
 import Title from 'antd/es/typography/Title'
 import React from 'react'
 import PromotionForm from './Forms/PromotionForm'
@@ -6,7 +6,7 @@ import PromotionsTable from './Tables/PromotionsTable'
 import { useAppContext } from '../../../AppContext'
 
 function PromotionsManager() {
-    const { width } = useAppContext()
+    const { width, getAllPromotions } = useAppContext()
   return (
     <React.Fragment>
         <Title>Promociones</Title>
@@ -14,6 +14,7 @@ function PromotionsManager() {
         <Row gutter={[16, 16]}>
             <Col xl={12} lg={24} xs={24}>
                 <Card title="Listado de promociones" style={{minHeight: width < 1200 ? "10vh" : "100vh"}}>
+                    <Button onClick={()=> getAllPromotions()}>Obtener Promociones</Button>
                     <PromotionsTable/>
                 </Card>
             </Col>
