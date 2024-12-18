@@ -10,7 +10,7 @@
     color: #2c3e50;
     height: 64px;
     line-height: 64px;
-    background-color: #2a9d8f;
+    background-color: #000000;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -27,7 +27,7 @@
 .sider {
     width: 190px;
     color: #ffffff;
-    background-color: #264653;
+    background-color: #000000;
     display: flex;
     flex-direction: column;
     position: relative; 
@@ -72,7 +72,7 @@
 }
 
 .menu-icon {
-    background-color: #0a2b00;
+    background-color: #000000;
     width: 40px;
     height: 40px; 
     border-radius: 50%; 
@@ -92,7 +92,7 @@
 }
 
 .menu-icon.active {
-    background-color: #0f3f00;
+    background-color: #1a1a1a;
     transform: rotate(180deg);
 }
 
