@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../../AppContext';
 import PromotionIcon from "../../public/assets/icons/discount-tag-discount-ecommerce-svgrepo-com.svg"
+import BannerSvg from "../../public/assets/icons/bannerSvg.svg"
 function LayoutComponent({ component }) {
     const navigate = useNavigate()
     const [resizeSideBar, setResizeSideBar] = useState(false)
@@ -55,6 +56,15 @@ function LayoutComponent({ component }) {
                                             }}
                                         >
                                             <img src={PromotionIcon} width={24} height={24}/>Promociones
+                                        </li>
+
+                                        <li
+                                            onClick={()=> {
+                                                if (width < 868) setResizeSideBar(true)
+                                                navigate("/manage-principal")
+                                            }}
+                                        >
+                                            <img src={BannerSvg} width={24} height={24}/> Principal
                                         </li>
 
                                         <li
