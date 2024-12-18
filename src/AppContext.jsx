@@ -520,7 +520,115 @@ export const AppProvider = ({ children }) => {
             })
             return false
         }
+    };
+
+    const saveBanner = async(bannerData) => {
+        try {
+            const response = await fetch(`${apis.backend}/api/banners/save-banner`,{
+                method: "POST",
+                body: bannerData
+            })
+
+            const responseData = await processRequests(response)
+            if(!response.ok) throw new Error(responseData.msg)
+            await getAllBanners()
+            message.success(`${responseData.msg}`)
+            return true
+        } catch (error) {
+            console.log(error)
+            notification.error({
+                message: "No fue posible guardar el banner",
+                description: error.message,
+                duration: 5,
+                pauseOnHover: false,
+                showProgress: true
+            })
+            return false
+        }
     }
+    const [banners, setBanners] = useState([])
+
+    useEffect(()=>{
+        console.log("Banners", banners)
+    },[banners])
+    const getAllBanners = async() => {
+        try {
+            const response = await fetch(`${apis.backend}/api/banners/get-banners`)
+            const responseData = await processRequests(response)
+            if(response.status === 404) return;
+            if(!response.ok) throw new Error(responseData.msg)
+            if(responseData.banners.length > 0) setBanners(responseData.banners)
+            else setBanners([])
+            return true
+        } catch (error) {
+            console.log(error)
+            notification.error({
+                message: "No fue posible obtener los banners",
+                description: error.message,
+                duration: 5,
+                pauseOnHover: false,
+                showProgress: true
+            })
+            return false
+        }
+    }
+
+    const deleteBanner = async(bannerID) => {
+        try {
+            const response = await fetch(`${apis.backend}/api/banners/delete-banner/${bannerID}`,{
+                method: "DELETE"
+            })
+
+            const responseData = await processRequests(response)
+            if(!response.ok) throw new Error(responseData.msg)
+            message.success(`${responseData.msg}`)
+            getAllBanners()
+            return true
+        } catch (error) {
+            console.log(error)
+            notification.error({
+                message: "No fue posible eliminar el banner",
+                description: error.message,
+                duration: 5,
+                pauseOnHover: false,
+                showProgress: true
+            })
+            return false
+        }
+    }
+
+    const [bannerId, setBannerId] = useState(null)
+    const [editingBanner, setEditingBanner] = useState(false)
+    const handleBanner = (bannerID, editing = false) => {
+        setBannerId(bannerID)
+        setEditingBanner(editing)
+    }
+
+    const editBanner = async(bannerData) => {
+        try {
+            const response = await fetch(`${apis.backend}/api/banners/edit-banner/${bannerId}`,{
+                method: "PUT",
+                body: bannerData
+            })
+
+            const responseData = await processRequests(response)
+            if(!response.ok) throw new Error(responseData.msg)
+            message.success(`${responseData.msg}`)
+            getAllBanners()
+            return true
+        } catch (error) {
+            console.log(error)
+            notification.error({
+                message: "No fue posible editar el banner",
+                description: error.message,
+                duration: 5,
+                pauseOnHover: false,
+                showProgress: true
+            })
+            return false
+        }
+    }
+
     const appIsReady = useRef(false)
     useEffect(()=>{
         (async()=>{
@@ -531,7 +639,8 @@ export const AppProvider = ({ children }) => {
                     await Promise.all([
                        getCategories(),
                        getProducts(),
-                       getAllPromotions()
+                       getAllPromotions(),
+                       getAllBanners()
                     ]);
                     
                  } catch (error) {
@@ -610,7 +719,7 @@ export const AppProvider = ({ children }) => {
                 editProducts, deleteProducts, handlerCategories, editingCategory, categoryId, showCategoryForm, showAlertCategories, isDeletingCategory,
                 editCategory, width, getCountProductsWithCategory, deleteCategory, verifyOtpAdminCode, updateAdminPassword,
                 savePromotion, promotions, getAllPromotions, deletePromotion, handlePromotions, promotionID, editingPromotion,
-                editPromotion
+                editPromotion, saveBanner, banners, deleteBanner, handleBanner, bannerId, editingBanner, editBanner
             }}
         >
             {children}
