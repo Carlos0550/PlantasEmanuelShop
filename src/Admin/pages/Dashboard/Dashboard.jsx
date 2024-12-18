@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { useAppContext } from '../../../AppContext'
 import { useNavigate } from 'react-router-dom'
-import { Card, Col, Row, Statistic } from 'antd'
+import { Card, Col, Row, Statistic, Table } from 'antd'
 import "./Dashboard.css"
 function Dashboard() {
   const { registerUser, loginUser, loginData } = useAppContext()
@@ -14,30 +14,10 @@ function Dashboard() {
   return (
     <React.Fragment>
       <h1>Panel de administración</h1>
-      <h2>Hola, {loginData?.user_fullname}</h2>
-      <section className="cards-container">
-
-        <article className='dashboard-cards'>
-          <p className='dashboard-cards__title'>Nuevos usuarios</p>
-          <p className='dashboard-cards__value'>5</p>
-        </article>
-
-        <article className='dashboard-cards'>
-          <p className='dashboard-cards__title'>Ventas del mes</p>
-          <p className='dashboard-cards__value'>15</p>
-        </article>
-
-        <article className='dashboard-cards'>
-          <p className='dashboard-cards__title'>Total de ventas</p>
-          <p className='dashboard-cards__value'>$ 15.000</p>
-        </article>
-
-        <article className='dashboard-cards'>
-          <p className='dashboard-cards__title'>Nuevos usuarios</p>
-          <p className='dashboard-cards__value'>5</p>
-        </article>
-
-      </section>
+      <h2>Hola, {loginData?.admin_name}</h2>
+      <Card title="Listado de ordenes">
+          <Table/>
+      </Card>
     </React.Fragment>
   )
 }
