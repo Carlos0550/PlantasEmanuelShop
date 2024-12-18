@@ -36,6 +36,9 @@ function ProductsTable() {
                     <span>{parseFloat(record.product_price).toLocaleString("es-AR", { style: "currency", currency: "ARS" })}</span>
                 )
             }
+        },{
+            title: "Stock",
+            dataIndex: "stock",
         },
         {
             title: "Categoría",
