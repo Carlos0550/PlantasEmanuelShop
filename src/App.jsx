@@ -8,18 +8,21 @@ import ProductsManager from "./Admin/pages/ProductManager/ProductsManager"
 import ClientsManager from "./Admin/pages/Clients/ClientsManager"
 import PromotionsManager from "./Admin/pages/Promotions/PromotionsManager"
 import PrincipalManager from "./Admin/pages/Principal/PrincipalManager"
+import SettingsManager from "./Admin/pages/Settings/SettingsManager"
 function App() {
   return (
     <Routes>
       {/* Rutas de administrador */}
       <Route path="/" element={<Login />}/>
       <Route path="/register" element={<Register />}/>
-      <Route path="/dashboard" element={<LayoutComponent component={<Dashboard/>}/>}/>
-      <Route path="/manage-products" element={<LayoutComponent component={<ProductsManager/>}/>}/>
-      <Route path="/manage-clients" element={<LayoutComponent component={<ClientsManager/>}/>}/>
-      <Route path="/manage-promotions" element={<LayoutComponent component={<PromotionsManager/>}/>}/>
-      <Route path="/manage-principal" element={<LayoutComponent component={<PrincipalManager/>}/>}/>
+      <Route path="/admin-dashboard" element={<LayoutComponent component={<Dashboard/>}/>}/>
+      <Route path="/admin-manage-products" element={<LayoutComponent component={<ProductsManager/>}/>}/>
+      <Route path="/admin-manage-clients" element={<LayoutComponent component={<ClientsManager/>}/>}/>
+      <Route path="/admin-manage-promotions" element={<LayoutComponent component={<PromotionsManager/>}/>}/>
+      <Route path="/admin-manage-principal" element={<LayoutComponent component={<PrincipalManager/>}/>}/>
+      <Route path="/admin-settings" element={<LayoutComponent component={<SettingsManager/>}/>}/>
       {/* Rutas para los clientes */}
+      <Route path="/shop" element={<h1>Shop</h1>}/>
     </Routes>
    
 
