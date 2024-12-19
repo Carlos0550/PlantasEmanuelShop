@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import dayjs from "dayjs"
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
+import EditorModal from './Components/Modales/EditorModal';
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -628,6 +629,88 @@ export const AppProvider = ({ children }) => {
             return false
         }
     }
+    const [headerColor, setHeaderColor] = useState("#000000")
+    const [contentColor, setContentColor] = useState("#000000")
+    const [footerColor, setFooterColor] = useState("#000000")
+    const [titleColor, setTitleColor] = useState("#000000")
+    const [subtitleColor, setSubtitleColor] = useState("#000000")
+    const [paragraphColor, setParagraphColor] = useState("#000000")
+
+    const getPageColors = async() => {
+        try {
+            const response = await fetch(`${apis.backend}/api/colors/get-page-colors`)
+            const responseData = await processRequests(response)
+            if(!response.ok) throw new Error(responseData.msg)
+            setHeaderColor(responseData.headerColor)
+            setContentColor(responseData.contentColor)
+            setFooterColor(responseData.footerColor)
+            setTitleColor(responseData.titleColor)
+            setSubtitleColor(responseData.subtitleColor)
+            setParagraphColor(responseData.paragraphColor)
+            console.log(responseData)
+            return true
+        } catch (error) {
+            console.log(error)
+            notification.error({
+                message: "No fue posible obtener los colores",
+                description: error.message,
+                duration: 5,
+                pauseOnHover: false,
+                showProgress: true
+            })
+            return false
+        }
+    }
+
+
+    const editPageColors = async(colorsData) => {
+        try {
+            const response = await fetch(`${apis.backend}/api/colors/edit-page-colors`,{
+                method: "PUT",
+                body: colorsData
+            })
+
+            const responseData = await processRequests(response)
+            if(!response.ok) throw new Error(responseData.msg)
+            await getPageColors()
+            return true
+        } catch (error) {
+            console.log(error)
+            notification.error({
+                message: "No fue posible editar los colores",
+                description: error.message,
+                duration: 5,
+                pauseOnHover: false,
+                showProgress: true
+            })
+            return false
+        }
+    }
+
+    const [editingAdminPsw, setEditingAdminPsw] = useState(false)
+    const changeAdminPsw = async(newPsw) => {
+        try {
+            const response = await fetch(`${apis.backend}/api/admins/change-admin-psw?admin_email=${loginData.admin_email}&password=${newPsw}`,{
+                method: "PUT",
+            })
+            const responseData = await processRequests(response)
+            console.log(responseData)
+            if(!response.ok) throw new Error(responseData.msg)
+            message.success(`${responseData.msg}`)
+            setEditingAdminPsw(false)
+            return true
+        } catch (error) {
+            console.log(error)
+            notification.error({
+                message: "No fue posible cambiar la contraseña",
+                description: error.message,
+                duration: 5,
+                pauseOnHover: false,
+                showProgress: true
+            })
+            return false
+        }
+    }
 
     const appIsReady = useRef(false)
     useEffect(()=>{
@@ -640,7 +723,8 @@ export const AppProvider = ({ children }) => {
                        getCategories(),
                        getProducts(),
                        getAllPromotions(),
-                       getAllBanners()
+                       getAllBanners(),
+                       getPageColors()
                     ]);
                     
                  } catch (error) {
@@ -694,7 +778,7 @@ export const AppProvider = ({ children }) => {
     
 
     useEffect(()=>{
-        if(isAdmin) navigate("/dashboard")
+        if(isAdmin) navigate("/admin-dashboard")
         
     },[isAdmin, loginData])
 
@@ -719,10 +803,13 @@ export const AppProvider = ({ children }) => {
                 editProducts, deleteProducts, handlerCategories, editingCategory, categoryId, showCategoryForm, showAlertCategories, isDeletingCategory,
                 editCategory, width, getCountProductsWithCategory, deleteCategory, verifyOtpAdminCode, updateAdminPassword,
                 savePromotion, promotions, getAllPromotions, deletePromotion, handlePromotions, promotionID, editingPromotion,
-                editPromotion, saveBanner, banners, deleteBanner, handleBanner, bannerId, editingBanner, editBanner
+                editPromotion, saveBanner, banners, deleteBanner, handleBanner, bannerId, editingBanner, editBanner, editPageColors,
+                headerColor, setHeaderColor, contentColor, setContentColor, footerColor, setFooterColor, titleColor, setTitleColor,
+                subtitleColor, setSubtitleColor, paragraphColor, setParagraphColor, changeAdminPsw, setEditingAdminPsw, editingAdminPsw
             }}
         >
             {children}
+            {editingAdminPsw && <EditorModal/>}
         </AppContext.Provider>
     )
 }

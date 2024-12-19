@@ -17,12 +17,12 @@ function LayoutComponent({ component }) {
     }, [width])
     return (
         <div className="layout">
-            <header className="header">
+            {/* <header className="header">
                 <picture className='logo-container'>
                     <img src={logoImg} alt="logoImg" />
                 </picture>
                 <button className='logout-btn'>Cerrar sesión</button>
-            </header>
+            </header> */}
 
             <div className="main-layout">
                 <aside className={resizeSideBar ? "sider active" : "sider"}>
@@ -37,14 +37,14 @@ function LayoutComponent({ component }) {
                                 ? (
                                     <React.Fragment>
                                         <li onClick={() => {
-                                            navigate("/dashboard")
+                                            navigate("/admin-dashboard")
                                             if (width < 868) setResizeSideBar(true)
                                         }}>
                                             <HomeOutlined style={{ fontSize: "22px" }} /> Dashboard
                                         </li>
                                         <li onClick={() => {
                                             if (width < 868) setResizeSideBar(true)
-                                            navigate("/manage-products")
+                                            navigate("/admin-manage-products")
                                         }}>
                                             <ProductOutlined style={{ fontSize: "22px" }} /> Productos
                                         </li>
@@ -52,7 +52,7 @@ function LayoutComponent({ component }) {
                                         <li
                                             onClick={()=>{
                                                 if (width < 868) setResizeSideBar(true)
-                                                navigate("/manage-promotions")
+                                                navigate("/admin-manage-promotions")
                                             }}
                                         >
                                             <img src={PromotionIcon} width={24} height={24}/>Promociones
@@ -61,7 +61,7 @@ function LayoutComponent({ component }) {
                                         <li
                                             onClick={()=> {
                                                 if (width < 868) setResizeSideBar(true)
-                                                navigate("/manage-principal")
+                                                navigate("/admin-manage-principal")
                                             }}
                                         >
                                             <img src={BannerSvg} width={24} height={24}/> Principal
@@ -70,12 +70,17 @@ function LayoutComponent({ component }) {
                                         <li
                                             onClick={()=> {
                                                 if (width < 868) setResizeSideBar(true)
-                                                navigate("/manage-clients")
+                                                navigate("/admin-manage-clients")
                                             }}
                                         >
                                             <UserOutlined style={{ fontSize: "22px" }} /> Clientes
                                         </li>
-                                        <li>
+                                        <li
+                                            onClick={()=> {
+                                                if (width < 868) setResizeSideBar(true)
+                                                navigate("/admin-settings")
+                                            }}
+                                        >
                                             <SettingOutlined style={{ fontSize: "22px" }} /> Ajustes
                                         </li>
                                     </React.Fragment>
